@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ISS Live</title>
+<style>
+  html, body {
+    margin: 0;
+    height: 100%;
+    background: #000;
+    overflow: hidden;
+    cursor: none;
+  }
+  iframe {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    border: 0;
+  }
+  #hint {
+    display: none;
+    position: fixed;
+    inset: 0;
+    align-items: center;
+    justify-content: center;
+    color: #9aa4b2;
+    font: 18px -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+    text-align: center;
+    padding: 2rem;
+  }
+</style>
+</head>
+<body>
+<div id="hint">Keine Video-ID angegeben.<br>URL so aufrufen: …/iss/?v=VIDEO-ID</div>
+<script>
+  // Video-ID kommt aus der Adresse: ?v=XXXXXXXXXXX
+  var params = new URLSearchParams(location.search);
+  var id = params.get("v");
+
+  if (!id) {
+    document.getElementById("hint").style.display = "flex";
+  } else {
+    var f = document.createElement("iframe");
+    f.src = "https://www.youtube.com/embed/" + encodeURIComponent(id) +
+            "?autoplay=1&mute=1&controls=0&playsinline=1&rel=0&modestbranding=1";
+    f.allow = "autoplay; encrypted-media; picture-in-picture";
+    // YouTube verlangt einen Referer, sonst Fehler 153
+    f.referrerPolicy = "strict-origin-when-cross-origin";
+    document.body.appendChild(f);
+
+    // Alle 6 Stunden neu laden, falls NASA den Stream kurz unterbricht
+    setTimeout(function () { location.reload(); }, 6 * 60 * 60 * 1000);
+  }
+</script>
+</body>
+</html>
