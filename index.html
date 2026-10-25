@@ -91,6 +91,7 @@
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
 <script>
   var params = new URLSearchParams(location.search);
 
@@ -128,9 +129,19 @@
     });
     map.setView([0, 0], Math.log2(360 / 256)); // ganze Welt im Panel
 
-    L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png", {
-      attribution: "© OpenStreetMap © CARTO", subdomains: "abcd", noWrap: true
-    }).addTo(map);
+    // Landkarte als Vektordaten (Natural Earth, gemeinfrei) – kein Kartendienst, kein API-Key
+    map.createPane("land");
+    map.getPane("land").style.zIndex = 250;
+    map.attributionControl.addAttribution("Natural Earth");
+    fetch("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json")
+      .then(function (r) { return r.json(); })
+      .then(function (topo) {
+        var countries = topojson.feature(topo, topo.objects.countries);
+        L.geoJSON(countries, {
+          pane: "land", interactive: false,
+          style: { color: "#33405a", weight: 0.5, fillColor: "#1d2638", fillOpacity: 1 }
+        }).addTo(map);
+      }).catch(function () {});
 
     var nightLayer = L.polygon([], { stroke: false, fillColor: "#000", fillOpacity: 0.45, interactive: false }).addTo(map);
     var trackLayer = L.layerGroup().addTo(map);
